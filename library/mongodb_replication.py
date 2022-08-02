@@ -286,7 +286,11 @@ def add_host(module, client, host_name, host_port, host_type, timeout=180, **kwa
             return
         except (OperationFailure, AutoReconnect) as e:
             if (dtdatetime.now() - start_time).seconds > timeout:
-                module.fail_json(msg='reached timeout while waiting for rs.reconfig(): %s' % to_native(e), exception=traceback.format_exc())
+                module.fail_json(
+                    msg=f'reached timeout while waiting for rs.reconfig(): {to_native(e)}',
+                    exception=traceback.format_exc(),
+                )
+
             time.sleep(5)
 
 
@@ -315,7 +319,11 @@ def remove_host(module, client, host_name, timeout=180):
                     module.fail_json(msg=fail_msg)
         except (OperationFailure, AutoReconnect) as e:
             if (dtdatetime.now() - start_time).seconds > timeout:
-                module.fail_json(msg='reached timeout while waiting for rs.reconfig(): %s' % to_native(e), exception=traceback.format_exc())
+                module.fail_json(
+                    msg=f'reached timeout while waiting for rs.reconfig(): {to_native(e)}',
+                    exception=traceback.format_exc(),
+                )
+
             time.sleep(5)
 
 
@@ -465,9 +473,17 @@ def main():
                 replica_set_created = True
                 module.exit_json(changed=True, host_name=host_name, host_port=host_port, host_type=host_type)
         except OperationFailure as e:
-            module.fail_json(msg='Unable to initiate replica set: %s' % to_native(e), exception=traceback.format_exc())
+            module.fail_json(
+                msg=f'Unable to initiate replica set: {to_native(e)}',
+                exception=traceback.format_exc(),
+            )
+
     except ConnectionFailure as e:
-        module.fail_json(msg='unable to connect to database: %s' % to_native(e), exception=traceback.format_exc())
+        module.fail_json(
+            msg=f'unable to connect to database: {to_native(e)}',
+            exception=traceback.format_exc(),
+        )
+
 
     # reconnect again
     client = MongoClient(**connection_params)
@@ -488,13 +504,21 @@ def main():
                          slave_delay=module.params['slave_delay'],
                          votes=module.params['votes'])
         except OperationFailure as e:
-            module.fail_json(msg='Unable to add new member to replica set: %s' % to_native(e), exception=traceback.format_exc())
+            module.fail_json(
+                msg=f'Unable to add new member to replica set: {to_native(e)}',
+                exception=traceback.format_exc(),
+            )
+
 
     elif state == 'absent':
         try:
             remove_host(module, client, host_name)
         except OperationFailure as e:
-            module.fail_json(msg='Unable to remove member of replica set: %s' % to_native(e), exception=traceback.format_exc())
+            module.fail_json(
+                msg=f'Unable to remove member of replica set: {to_native(e)}',
+                exception=traceback.format_exc(),
+            )
+
 
     module.exit_json(changed=True, host_name=host_name, host_port=host_port, host_type=host_type)
 
